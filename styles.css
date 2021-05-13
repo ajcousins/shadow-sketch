@@ -5,3 +5,11 @@ body {
 .section {
   height: 200vh;
 }
+
+#sun {
+  transition: transform 1s ease-in-out 0s;
+}
+
+#portText:hover {
+  color: orange;
+}

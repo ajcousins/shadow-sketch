@@ -3,6 +3,13 @@ const portText = document.querySelector("#portText");
 // Shadow body to be rendered and position to be calculated dynamically
 const shadowBodyA = document.querySelector("#shadowBodyA");
 
+// Next steps:
+// Think about groud plane positions for text elements and parallax.
+// Ground plane position will need to be calculated based on coordinates and height of element.
+
+// Background brightness based on height of sun?
+// Disable sun / shadows when sun goes below horizon?
+
 const sun = {
   dom: document.querySelector("#sun"),
   getCenter: function () {
@@ -19,6 +26,9 @@ const sun = {
     this.dom.setAttribute("cy", yCoord);
     calcShadow();
   },
+  windowScrollYRef: 0,
+  parallaxFactor: 2,
+  transitioning: false,
   initialise: function () {
     this.setX(window.innerWidth / 2);
     this.setY(window.innerHeight / 4);
@@ -26,13 +36,34 @@ const sun = {
       console.log("Hover");
     });
     window.addEventListener("scroll", () => {
-      console.log(window.scrollY);
-      this.setY(this.getCenter().y + window.scrollY * 1.05);
+      const scrolled = window.pageYOffset;
+      const rate = scrolled * this.parallaxFactor;
+      this.dom.style.transform = `translate3d(0px, ${rate}px, 0px)`;
     });
+    this.dom.addEventListener("transitionstart", () => {
+      if (this.transitioning === false) {
+        this.transitioning = true;
+        this.moveShadows();
+      }
+    });
+    this.dom.addEventListener("transitionend", () => {
+      this.transitioning = false;
+      clearInterval(this.shadowMovement);
+      this.shadowMovement = null;
+    });
+  },
+  shadowMovement: null,
+  moveShadows: function () {
+    if (!this.shadowMovement) {
+      this.shadowMovement = setInterval(() => {
+        calcShadow();
+      }, 50);
+    }
   },
 };
 
 const calcShadow = () => {
+  console.log("Calc shadow");
   const portBox = portText.getBoundingClientRect();
   const canvasBox = canvas.getBoundingClientRect();
   const yScroll = window.scrollY;
@@ -70,6 +101,15 @@ const projectedX = (srcX, srcY, intX, intY, planeY) => {
   const ratio = (planeY - srcY) / (planeY - srcY - (planeY - intY));
   return srcX - (srcX - intX) * ratio;
 };
+
+// Hover portText
+portText.addEventListener("mouseenter", () => {
+  portText.setAttribute("fill", "orange");
+});
+// Hover portText
+portText.addEventListener("mouseleave", () => {
+  portText.setAttribute("fill", "black");
+});
 
 window.addEventListener("load", calcShadow);
 window.addEventListener("resize", calcShadow);
