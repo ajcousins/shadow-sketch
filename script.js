@@ -1,7 +1,10 @@
+import portfolio from "./portfolio.js";
+// import textWrapper from "./textWrapper";
+
 const canvas = document.querySelector("#canvas");
-const portText = document.querySelector("#portText");
+// const portText = document.querySelector("#portText");
 // Shadow body to be rendered and position to be calculated dynamically
-const shadowBodyA = document.querySelector("#shadowBodyA");
+const shadowBodies = document.querySelectorAll(".shadowBodies");
 
 // Next steps:
 // Think about groud plane positions for text elements and parallax.
@@ -9,6 +12,18 @@ const shadowBodyA = document.querySelector("#shadowBodyA");
 
 // Background brightness based on height of sun?
 // Disable sun / shadows when sun goes below horizon?
+
+// const portTextA = document.createElement("svg");
+// portTextA.innerHTML = portfolio();
+// canvas.appendChild(portTextA);
+
+const portText = document.querySelector("#portfolio");
+portText.innerHTML = portfolio("20%", "20%");
+
+const testCopy = document.querySelector("#testCopy");
+testCopy.innerHTML = portfolio("60%", "20%");
+
+const objects = [portText, testCopy];
 
 const sun = {
   dom: document.querySelector("#sun"),
@@ -20,17 +35,20 @@ const sun = {
   },
   setX: function (xCoord) {
     this.dom.setAttribute("cx", xCoord);
-    calcShadow();
+    calcShadow(objects);
   },
   setY: function (yCoord) {
     this.dom.setAttribute("cy", yCoord);
-    calcShadow();
+    calcShadow(objects);
   },
   windowScrollYRef: 0,
   parallaxFactor: 2,
   transitioning: false,
-  initialise: function () {
+  setXPos: function () {
     this.setX(window.innerWidth / 2);
+  },
+  initialise: function () {
+    this.setXPos;
     this.setY(window.innerHeight / 4);
     this.dom.addEventListener("mouseover", () => {
       console.log("Hover");
@@ -56,43 +74,46 @@ const sun = {
   moveShadows: function () {
     if (!this.shadowMovement) {
       this.shadowMovement = setInterval(() => {
-        calcShadow();
+        calcShadow(objects);
       }, 50);
     }
   },
 };
 
-const calcShadow = () => {
-  console.log("Calc shadow");
-  const portBox = portText.getBoundingClientRect();
-  const canvasBox = canvas.getBoundingClientRect();
-  const yScroll = window.scrollY;
+const calcShadow = (objects) => {
+  // console.log("Calc shadow");
+  objects.forEach((object, index) => {
+    const box = object.getBoundingClientRect();
+    const canvasBox = canvas.getBoundingClientRect();
 
-  shadowBodyA.setAttribute(
-    "points",
-    `
-    ${portBox.left},
-    ${portBox.bottom + yScroll} 
-    ${portBox.right},
-    ${portBox.bottom + yScroll} 
-    ${projectedX(
-      sun.getCenter().x,
-      sun.getCenter().y,
-      portBox.right,
-      portBox.bottom,
-      canvasBox.bottom
-    )},
-    ${canvasBox.bottom + yScroll} 
-    ${projectedX(
-      sun.getCenter().x,
-      sun.getCenter().y,
-      portBox.left,
-      portBox.bottom,
-      canvasBox.bottom
-    )},
-    ${canvasBox.bottom + yScroll}
-    `
-  );
+    shadowBodies[index].setAttribute(
+      // Need to add "+ window.scrollY" to each y element, if css position is not set to fixed.
+
+      "points",
+      `
+      ${box.left},
+      ${box.bottom} 
+      ${box.right},
+      ${box.bottom} 
+      ${projectedX(
+        sun.getCenter().x,
+        sun.getCenter().y,
+        box.right,
+        box.bottom,
+        canvasBox.bottom
+      )},
+      ${canvasBox.bottom} 
+      ${projectedX(
+        sun.getCenter().x,
+        sun.getCenter().y,
+        box.left,
+        box.bottom,
+        canvasBox.bottom
+      )},
+      ${canvasBox.bottom}
+      `
+    );
+  });
 };
 
 // Create function which returns x and y coordinate at bottom of canvas.
@@ -102,16 +123,24 @@ const projectedX = (srcX, srcY, intX, intY, planeY) => {
   return srcX - (srcX - intX) * ratio;
 };
 
-// Hover portText
-portText.addEventListener("mouseenter", () => {
-  portText.setAttribute("fill", "orange");
-});
-// Hover portText
-portText.addEventListener("mouseleave", () => {
-  portText.setAttribute("fill", "black");
-});
+// // SHOULD USE BOUNDING BOX INSTEAD 'getBoundingClientRect()'
+// // Hover portText
+// portText.addEventListener("mouseenter", () => {
+//   portText.setAttribute("fill", "orange");
+// });
+// // Hover portText
+// portText.addEventListener("mouseleave", () => {
+//   portText.setAttribute("fill", "black");
+// });
 
-window.addEventListener("load", calcShadow);
-window.addEventListener("resize", calcShadow);
-window.addEventListener("scroll", calcShadow);
+window.addEventListener("load", () => {
+  calcShadow(objects);
+});
+window.addEventListener("resize", () => {
+  calcShadow(objects);
+  sun.setXPos();
+});
+window.addEventListener("scroll", () => {
+  calcShadow(objects);
+});
 sun.initialise();
