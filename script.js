@@ -1,4 +1,6 @@
-import portfolio from "./portfolio.js";
+import portfolioSVG from "./portfolio.js";
+import aboutSVG from "./about.js";
+import contactSVG from "./contact.js";
 // import textWrapper from "./textWrapper";
 
 const canvas = document.querySelector("#canvas");
@@ -18,12 +20,15 @@ const shadowBodies = document.querySelectorAll(".shadowBodies");
 // canvas.appendChild(portTextA);
 
 const portText = document.querySelector("#portfolio");
-portText.innerHTML = portfolio("20%", "20%");
+portText.innerHTML = portfolioSVG("20%", "20%");
 
-const testCopy = document.querySelector("#testCopy");
-testCopy.innerHTML = portfolio("60%", "20%");
+const about = document.querySelector("#about");
+about.innerHTML = aboutSVG("60%", "30%");
 
-const objects = [portText, testCopy];
+const contact = document.querySelector("#contact");
+contact.innerHTML = contactSVG("80%", "30%");
+
+const objects = [portText, about, contact];
 
 const sun = {
   dom: document.querySelector("#sun"),
@@ -86,11 +91,12 @@ const calcShadow = (objects) => {
     const box = object.getBoundingClientRect();
     const canvasBox = canvas.getBoundingClientRect();
 
-    shadowBodies[index].setAttribute(
-      // Need to add "+ window.scrollY" to each y element, if css position is not set to fixed.
+    if (sun.getCenter().y < box.bottom) {
+      shadowBodies[index].setAttribute(
+        // Need to add "+ window.scrollY" to each y element, if css position is not set to fixed.
 
-      "points",
-      `
+        "points",
+        `
       ${box.left},
       ${box.bottom} 
       ${box.right},
@@ -112,7 +118,10 @@ const calcShadow = (objects) => {
       )},
       ${canvasBox.bottom}
       `
-    );
+      );
+    } else {
+      shadowBodies[index].setAttribute("points", "0,0 0,0 0,0 0,0");
+    }
   });
 };
 
