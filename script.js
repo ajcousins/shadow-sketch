@@ -4,7 +4,6 @@ import contactSVG from "./contact.js";
 // import textWrapper from "./textWrapper";
 
 const canvas = document.querySelector("#canvas");
-// const portText = document.querySelector("#portText");
 // Shadow body to be rendered and position to be calculated dynamically
 const shadowBodies = document.querySelectorAll(".shadowBodies");
 
@@ -15,44 +14,51 @@ const shadowBodies = document.querySelectorAll(".shadowBodies");
 // Background brightness based on height of sun?
 // Disable sun / shadows when sun goes below horizon?
 
-// const portTextA = document.createElement("svg");
-// portTextA.innerHTML = portfolio();
-// canvas.appendChild(portTextA);
+class TextObject {
+  constructor(selector, svgWrapper, x, y) {
+    this.dom = document.querySelector(selector);
+    this.x = x;
+    this.y = y;
+    this.dom.innerHTML = this.position(x, y, svgWrapper);
+    this.bottom = this.dom.getBoundingClientRect().bottom;
+  }
+  position(x, y, svgWrapper) {
+    return `<svg x=${x || 0} y=${y || 0}>` + svgWrapper;
+  }
+}
+const portfolio = new TextObject("#portfolio", portfolioSVG, "20%", "15%");
+const about = new TextObject("#about", aboutSVG, "53%", "30%");
+const contact = new TextObject("#contact", contactSVG, "70%", "30%");
 
-const portText = document.querySelector("#portfolio");
-portText.innerHTML = portfolioSVG("20%", "20%");
+const objects = [portfolio, about, contact];
 
-const about = document.querySelector("#about");
-about.innerHTML = aboutSVG("60%", "30%");
-
-const contact = document.querySelector("#contact");
-contact.innerHTML = contactSVG("80%", "30%");
-
-const objects = [portText, about, contact];
+console.log("portfolio", portfolio.bottom);
+console.log("about", about.bottom);
+console.log("contact", contact.bottom);
 
 const sun = {
   dom: document.querySelector("#sun"),
-  getCenter: function () {
+  getCenter() {
     const box = this.dom.getBoundingClientRect();
     const x = (box.right - box.left) / 2 + box.left;
     const y = (box.bottom - box.top) / 2 + box.top;
     return { x, y };
   },
-  setX: function (xCoord) {
+  setX(xCoord) {
     this.dom.setAttribute("cx", xCoord);
     calcShadow(objects);
   },
-  setY: function (yCoord) {
+  setY(yCoord) {
     this.dom.setAttribute("cy", yCoord);
     calcShadow(objects);
   },
   windowScrollYRef: 0,
   parallaxFactor: 2,
   transitioning: false,
-  setXPos: function () {
+  setXPos() {
     this.setX(window.innerWidth / 2);
   },
-  initialise: function () {
+  initialise() {
     this.setXPos;
     this.setY(window.innerHeight / 4);
     this.dom.addEventListener("mouseover", () => {
@@ -76,7 +82,7 @@ const sun = {
     });
   },
   shadowMovement: null,
-  moveShadows: function () {
+  moveShadows() {
     if (!this.shadowMovement) {
       this.shadowMovement = setInterval(() => {
         calcShadow(objects);
@@ -88,7 +94,7 @@ const sun = {
 const calcShadow = (objects) => {
   // console.log("Calc shadow");
   objects.forEach((object, index) => {
-    const box = object.getBoundingClientRect();
+    const box = object.dom.getBoundingClientRect();
     const canvasBox = canvas.getBoundingClientRect();
 
     if (sun.getCenter().y < box.bottom) {
@@ -97,27 +103,27 @@ const calcShadow = (objects) => {
 
         "points",
         `
-      ${box.left},
-      ${box.bottom} 
-      ${box.right},
-      ${box.bottom} 
-      ${projectedX(
-        sun.getCenter().x,
-        sun.getCenter().y,
-        box.right,
-        box.bottom,
-        canvasBox.bottom
-      )},
-      ${canvasBox.bottom} 
-      ${projectedX(
-        sun.getCenter().x,
-        sun.getCenter().y,
-        box.left,
-        box.bottom,
-        canvasBox.bottom
-      )},
-      ${canvasBox.bottom}
-      `
+        ${box.left},
+        ${box.bottom} 
+        ${box.right},
+        ${box.bottom} 
+        ${projectedX(
+          sun.getCenter().x,
+          sun.getCenter().y,
+          box.right,
+          box.bottom,
+          canvasBox.bottom
+        )},
+        ${canvasBox.bottom} 
+        ${projectedX(
+          sun.getCenter().x,
+          sun.getCenter().y,
+          box.left,
+          box.bottom,
+          canvasBox.bottom
+        )},
+        ${canvasBox.bottom}
+        `
       );
     } else {
       shadowBodies[index].setAttribute("points", "0,0 0,0 0,0 0,0");
@@ -133,13 +139,13 @@ const projectedX = (srcX, srcY, intX, intY, planeY) => {
 };
 
 // // SHOULD USE BOUNDING BOX INSTEAD 'getBoundingClientRect()'
-// // Hover portText
-// portText.addEventListener("mouseenter", () => {
-//   portText.setAttribute("fill", "orange");
+// // Hover portfolio
+// portfolio.addEventListener("mouseenter", () => {
+//   portfolio.setAttribute("fill", "orange");
 // });
-// // Hover portText
-// portText.addEventListener("mouseleave", () => {
-//   portText.setAttribute("fill", "black");
+// // Hover portfolio
+// portfolio.addEventListener("mouseleave", () => {
+//   portfolio.setAttribute("fill", "black");
 // });
 
 window.addEventListener("load", () => {
@@ -153,3 +159,9 @@ window.addEventListener("scroll", () => {
   calcShadow(objects);
 });
 sun.initialise();
+
+window.addEventListener("mousemove", (e) => {
+  console.log(e.clientX);
+  // Mouse events/ location
+  // https://www.youtube.com/watch?v=l_ahowxmqzg
+});

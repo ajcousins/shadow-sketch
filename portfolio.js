@@ -1,7 +1,5 @@
-const portfolio = (x, y, scale) => {
-  return `
-<svg id="portText" x=${x || 0} y=${y || 0} width="75.676px" height="401.365px">
-<g opacity="0.5" enable-background="new    ">
+const portfolio = `
+<g opacity="0.5">
 <path d="M45.307,384.245h17.367V395.6H12.26v-17.789c0-12.703,5.355-19.055,16.066-19.055c5.063,0,9.158,1.822,12.287,5.467
   s4.693,8.514,4.693,14.607V384.245z M20.979,384.245h15.715v-4.465c0-6.047-2.648-9.07-7.945-9.07c-5.18,0-7.77,3.023-7.77,9.07
   V384.245z"/>
@@ -35,5 +33,5 @@ const portfolio = (x, y, scale) => {
 </g>
       </svg>
 `;
-};
+
 export default portfolio;
