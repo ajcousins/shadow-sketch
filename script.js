@@ -96,14 +96,14 @@ const sun = {
   },
   initialise() {
     this.setXPos;
-    this.setY(window.innerHeight / 4);
+    this.setY(0);
     this.dom.addEventListener("mouseover", () => {
       console.log("Hover");
     });
-    window.addEventListener("scroll", () => {
-      const scrolled = window.pageYOffset;
-      const rate = scrolled * this.parallaxFactor;
-      this.dom.style.transform = `translate3d(0px, ${rate}px, 0px)`;
+    window.addEventListener("mousemove", (e) => {
+      const mouseYPos = e.clientY;
+      const yPos = window.innerHeight - mouseYPos;
+      this.dom.style.transform = `translate3d(0px, ${yPos}px, 0px)`;
     });
     this.dom.addEventListener("transitionstart", () => {
       if (this.transitioning === false) {
@@ -206,6 +206,4 @@ window.addEventListener("mousemove", (e) => {
   for (let i = 0; i < objects.length; i++) {
     objects[i].moveX(xMousePosRatio, yReference);
   }
-
-  calcShadow(objects);
 });
