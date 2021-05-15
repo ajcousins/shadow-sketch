@@ -24,9 +24,11 @@ class TextObject {
     this.y = y;
     this.svgWrapper = svgWrapper;
     this.dom.innerHTML = this.position(x, y, svgWrapper);
+    this.box = this.dom.getBoundingClientRect();
     this.bottom = this.dom.getBoundingClientRect().bottom;
     this.innerID = `${selector}Inner`;
     this.innerDom = document.querySelector(this.innerID);
+    this.innerBox = this.innerDom.getBoundingClientRect();
     this.transitioning = false;
     this.shadowMovement = null;
   }
@@ -62,6 +64,18 @@ class TextObject {
       }, 12);
     }
   }
+  // // Hover portfolio
+  hover() {
+    this.dom.addEventListener("mouseover", () => {
+      this.dom.setAttribute("fill", "white");
+      this.dom.setAttribute("opacity", "1");
+    });
+    // Hover portfolio
+    this.dom.addEventListener("mouseleave", () => {
+      this.dom.setAttribute("fill", "black");
+      this.dom.setAttribute("opacity", "0.5");
+    });
+  }
 }
 
 const portfolio = new TextObject("#portfolio", portfolioSVG, "15%", "15%");
@@ -71,6 +85,9 @@ const contact = new TextObject("#contact", contactSVG, "65%", "30%");
 const objects = [portfolio, about, contact];
 // Initiate listener for one object. Affects all objects.
 portfolio.mouseMoveListener();
+objects.forEach((object) => {
+  object.hover();
+});
 
 const sun = {
   dom: document.querySelector("#sun"),

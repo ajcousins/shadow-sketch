@@ -10,14 +10,6 @@ body {
   transition: transform 3s cubic-bezier(0.37, 0.74, 0.77, 1);
 }
 
-.portText {
-  color: red;
-}
-
-#portText:hover {
-  color: orange;
-}
-
 #canvas {
   position: fixed;
   background: linear-gradient(
