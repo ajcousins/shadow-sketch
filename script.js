@@ -16,9 +16,6 @@ const maxTranslate = 300;
 // Background brightness based on height of sun?
 // Disable sun / shadows when sun goes below horizon?
 
-// For xMouse shadow transitions: calcShadow function requires an array. Could call function from each object, wrapped in array?
-// Add eventlistener for each object in Class? In constructor?
-
 class TextObject {
   constructor(selector, svgWrapper, x, y) {
     this.id = selector;
@@ -28,38 +25,52 @@ class TextObject {
     this.svgWrapper = svgWrapper;
     this.dom.innerHTML = this.position(x, y, svgWrapper);
     this.bottom = this.dom.getBoundingClientRect().bottom;
-    // this.parallaxFactor =
-    //   Math.floor((this.bottom / window.innerHeight) * 100) / 100;
     this.innerID = `${selector}Inner`;
     this.innerDom = document.querySelector(this.innerID);
+    this.transitioning = false;
+    this.shadowMovement = null;
   }
   position(x, y, svgWrapper) {
     return `<svg x=${x || 0} y=${y || 0}>` + svgWrapper;
   }
   moveX(xFactor, yOriginReference) {
-    // console.log("Hi");
-    // console.log(this.id, this.parallaxFactor);
     const moveFactor =
       ((this.bottom - yOriginReference) /
         (window.innerHeight - yOriginReference)) *
       xFactor;
-    console.log(moveFactor) * xFactor;
-
     this.innerDom.style.transform = `translate3d(${
       maxTranslate * moveFactor
     }px, 0px, 0px)`;
   }
+  mouseMoveListener() {
+    this.innerDom.addEventListener("transitionstart", () => {
+      if (this.transitioning === false) {
+        this.transitioning = true;
+        this.moveShadows();
+      }
+    });
+    this.innerDom.addEventListener("transitionend", () => {
+      this.transitioning = false;
+      clearInterval(this.shadowMovement);
+      this.shadowMovement = null;
+    });
+  }
+  moveShadows() {
+    if (!this.shadowMovement) {
+      this.shadowMovement = setInterval(() => {
+        calcShadow(objects);
+      }, 12);
+    }
+  }
 }
 
-const portfolio = new TextObject("#portfolio", portfolioSVG, "20%", "15%");
-const about = new TextObject("#about", aboutSVG, "53%", "30%");
-const contact = new TextObject("#contact", contactSVG, "70%", "30%");
+const portfolio = new TextObject("#portfolio", portfolioSVG, "15%", "15%");
+const about = new TextObject("#about", aboutSVG, "48%", "30%");
+const contact = new TextObject("#contact", contactSVG, "65%", "30%");
 
 const objects = [portfolio, about, contact];
-
-// console.log("portfolio", portfolio.parallaxFactor);
-// console.log("about", about.parallaxFactor);
-// console.log("contact", contact.parallaxFactor);
+// Initiate listener for one object. Affects all objects.
+portfolio.mouseMoveListener();
 
 const sun = {
   dom: document.querySelector("#sun"),
@@ -117,7 +128,6 @@ const sun = {
 };
 
 const calcShadow = (objects) => {
-  // console.log("Calc shadow");
   objects.forEach((object, index) => {
     const box = object.dom.getBoundingClientRect();
     const canvasBox = canvas.getBoundingClientRect();
@@ -188,27 +198,14 @@ sun.initialise();
 window.addEventListener("mousemove", (e) => {
   const xMousePosRatio =
     Math.floor((e.clientX / window.innerWidth) * 100) / 100;
-  const xCentralise = (x) => {
-    if (x >= 0.5) return Math.floor((x - 0.5) * 100) / 100;
-    else if (x < 0.5) return -Math.floor((0.5 - x) * 100) / 100;
-  };
   const yReference = objects.reduce((prevVal, object) => {
     if (object.bottom - 100 < prevVal) return object.bottom - 100;
   }, Infinity);
-  // console.log("yReference", yReference);
 
-  objects.forEach((object, index) => {
-    // console.log("move", index);
-    // console.log(`object ${index}:`, object.bottom);
-    object.moveX(xMousePosRatio, yReference);
-  });
+  // For loop better than forEach for performance.
+  for (let i = 0; i < objects.length; i++) {
+    objects[i].moveX(xMousePosRatio, yReference);
+  }
+
   calcShadow(objects);
 });
-
-/*
-window.addEventListener("scroll", () => {
-  const scrolled = window.pageYOffset;
-  const rate = scrolled * this.parallaxFactor;
-  this.dom.style.transform = `translate3d(0px, ${rate}px, 0px)`;
-});
-*/

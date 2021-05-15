@@ -7,7 +7,7 @@ body {
 }
 
 #sun {
-  transition: transform 0.5s ease-out 0s;
+  transition: transform 0.5s cubic-bezier(0.37, 0.74, 0.77, 1);
 }
 
 .portText {
@@ -28,5 +28,5 @@ body {
 }
 
 .textInner {
-  transition: transform 0.5s ease-out 0s;
+  transition: transform 0.5s cubic-bezier(0.37, 0.74, 0.77, 1);
 }
