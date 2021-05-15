@@ -7,6 +7,8 @@ const canvas = document.querySelector("#canvas");
 // Shadow body to be rendered and position to be calculated dynamically
 const shadowBodies = document.querySelectorAll(".shadowBodies");
 
+const maxTranslate = 300;
+
 // Next steps:
 // Think about groud plane positions for text elements and parallax.
 // Ground plane position will need to be calculated based on coordinates and height of element.
@@ -14,27 +16,50 @@ const shadowBodies = document.querySelectorAll(".shadowBodies");
 // Background brightness based on height of sun?
 // Disable sun / shadows when sun goes below horizon?
 
+// For xMouse shadow transitions: calcShadow function requires an array. Could call function from each object, wrapped in array?
+// Add eventlistener for each object in Class? In constructor?
+
 class TextObject {
   constructor(selector, svgWrapper, x, y) {
+    this.id = selector;
     this.dom = document.querySelector(selector);
     this.x = x;
     this.y = y;
+    this.svgWrapper = svgWrapper;
     this.dom.innerHTML = this.position(x, y, svgWrapper);
     this.bottom = this.dom.getBoundingClientRect().bottom;
+    // this.parallaxFactor =
+    //   Math.floor((this.bottom / window.innerHeight) * 100) / 100;
+    this.innerID = `${selector}Inner`;
+    this.innerDom = document.querySelector(this.innerID);
   }
   position(x, y, svgWrapper) {
     return `<svg x=${x || 0} y=${y || 0}>` + svgWrapper;
   }
+  moveX(xFactor, yOriginReference) {
+    // console.log("Hi");
+    // console.log(this.id, this.parallaxFactor);
+    const moveFactor =
+      ((this.bottom - yOriginReference) /
+        (window.innerHeight - yOriginReference)) *
+      xFactor;
+    console.log(moveFactor) * xFactor;
+
+    this.innerDom.style.transform = `translate3d(${
+      maxTranslate * moveFactor
+    }px, 0px, 0px)`;
+  }
 }
+
 const portfolio = new TextObject("#portfolio", portfolioSVG, "20%", "15%");
 const about = new TextObject("#about", aboutSVG, "53%", "30%");
 const contact = new TextObject("#contact", contactSVG, "70%", "30%");
 
 const objects = [portfolio, about, contact];
 
-console.log("portfolio", portfolio.bottom);
-console.log("about", about.bottom);
-console.log("contact", contact.bottom);
+// console.log("portfolio", portfolio.parallaxFactor);
+// console.log("about", about.parallaxFactor);
+// console.log("contact", contact.parallaxFactor);
 
 const sun = {
   dom: document.querySelector("#sun"),
@@ -161,7 +186,29 @@ window.addEventListener("scroll", () => {
 sun.initialise();
 
 window.addEventListener("mousemove", (e) => {
-  console.log(e.clientX);
-  // Mouse events/ location
-  // https://www.youtube.com/watch?v=l_ahowxmqzg
+  const xMousePosRatio =
+    Math.floor((e.clientX / window.innerWidth) * 100) / 100;
+  const xCentralise = (x) => {
+    if (x >= 0.5) return Math.floor((x - 0.5) * 100) / 100;
+    else if (x < 0.5) return -Math.floor((0.5 - x) * 100) / 100;
+  };
+  const yReference = objects.reduce((prevVal, object) => {
+    if (object.bottom - 100 < prevVal) return object.bottom - 100;
+  }, Infinity);
+  // console.log("yReference", yReference);
+
+  objects.forEach((object, index) => {
+    // console.log("move", index);
+    // console.log(`object ${index}:`, object.bottom);
+    object.moveX(xMousePosRatio, yReference);
+  });
+  calcShadow(objects);
 });
+
+/*
+window.addEventListener("scroll", () => {
+  const scrolled = window.pageYOffset;
+  const rate = scrolled * this.parallaxFactor;
+  this.dom.style.transform = `translate3d(0px, ${rate}px, 0px)`;
+});
+*/

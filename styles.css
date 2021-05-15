@@ -26,3 +26,7 @@ body {
     rgba(255, 119, 59, 1) 100%
   );
 }
+
+.textInner {
+  transition: transform 0.5s ease-out 0s;
+}
