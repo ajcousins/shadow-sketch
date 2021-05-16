@@ -21,4 +21,5 @@ body {
 
 .textInner {
   transition: transform 0.5s cubic-bezier(0.37, 0.74, 0.77, 1);
+  cursor: pointer;
 }

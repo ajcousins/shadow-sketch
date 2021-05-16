@@ -1,13 +1,12 @@
 import portfolioSVG from "./portfolio.js";
 import aboutSVG from "./about.js";
 import contactSVG from "./contact.js";
+import TextObject from "./TextObject.js";
 // import textWrapper from "./textWrapper";
 
 const canvas = document.querySelector("#canvas");
 // Shadow body to be rendered and position to be calculated dynamically
 const shadowBodies = document.querySelectorAll(".shadowBodies");
-
-const maxTranslate = 300;
 
 // Next steps:
 // Think about groud plane positions for text elements and parallax.
@@ -15,68 +14,6 @@ const maxTranslate = 300;
 
 // Background brightness based on height of sun?
 // Disable sun / shadows when sun goes below horizon?
-
-class TextObject {
-  constructor(selector, svgWrapper, x, y) {
-    this.id = selector;
-    this.dom = document.querySelector(selector);
-    this.x = x;
-    this.y = y;
-    this.svgWrapper = svgWrapper;
-    this.dom.innerHTML = this.position(x, y, svgWrapper);
-    this.box = this.dom.getBoundingClientRect();
-    this.bottom = this.dom.getBoundingClientRect().bottom;
-    this.innerID = `${selector}Inner`;
-    this.innerDom = document.querySelector(this.innerID);
-    this.innerBox = this.innerDom.getBoundingClientRect();
-    this.transitioning = false;
-    this.shadowMovement = null;
-  }
-  position(x, y, svgWrapper) {
-    return `<svg x=${x || 0} y=${y || 0}>` + svgWrapper;
-  }
-  moveX(xFactor, yOriginReference) {
-    const moveFactor =
-      ((this.bottom - yOriginReference) /
-        (window.innerHeight - yOriginReference)) *
-      xFactor;
-    this.innerDom.style.transform = `translate3d(${
-      maxTranslate * moveFactor
-    }px, 0px, 0px)`;
-  }
-  mouseMoveListener() {
-    this.innerDom.addEventListener("transitionstart", () => {
-      if (this.transitioning === false) {
-        this.transitioning = true;
-        this.moveShadows();
-      }
-    });
-    this.innerDom.addEventListener("transitionend", () => {
-      this.transitioning = false;
-      clearInterval(this.shadowMovement);
-      this.shadowMovement = null;
-    });
-  }
-  moveShadows() {
-    if (!this.shadowMovement) {
-      this.shadowMovement = setInterval(() => {
-        calcShadow(objects);
-      }, 12);
-    }
-  }
-  // // Hover portfolio
-  hover() {
-    this.dom.addEventListener("mouseover", () => {
-      this.dom.setAttribute("fill", "white");
-      this.dom.setAttribute("opacity", "1");
-    });
-    // Hover portfolio
-    this.dom.addEventListener("mouseleave", () => {
-      this.dom.setAttribute("fill", "black");
-      this.dom.setAttribute("opacity", "0.5");
-    });
-  }
-}
 
 const portfolio = new TextObject("#portfolio", portfolioSVG, "15%", "15%");
 const about = new TextObject("#about", aboutSVG, "48%", "30%");
@@ -119,7 +56,14 @@ const sun = {
     });
     window.addEventListener("mousemove", (e) => {
       const mouseYPos = e.clientY;
-      const yPos = window.innerHeight - mouseYPos;
+      // yReference: y position of highest text object. To be used as horizon line.
+      const yReference = objects.reduce((prevVal, object) => {
+        if (object.bottom < prevVal) return object.bottom;
+      }, Infinity);
+      const yPos =
+        ((window.innerHeight - mouseYPos) / window.innerHeight) *
+        yReference *
+        1.1;
       this.dom.style.transform = `translate3d(0px, ${yPos}px, 0px)`;
     });
     this.dom.addEventListener("transitionstart", () => {
